@@ -113,7 +113,7 @@ resource "azurerm_virtual_machine_extension" "vm1extension" {
 
   settings = <<SETTINGS
     {
-        "fileUris":["https://gist.githubusercontent.com/jesseloudon/2b8e47119c45a54559c9bf53f1de352c/raw/ee2364fcb6e77b95a1bb227342a24db84c840479/ubuntu-setup-ansible.sh"]
+        "fileUris":["https://raw.githubusercontent.com/globalbao/terraform-azurerm-ansible-linux-vm/master/scripts/ubuntu-setup-ansible.sh"]
     }
 SETTINGS
 
