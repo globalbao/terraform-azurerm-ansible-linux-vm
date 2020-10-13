@@ -4,6 +4,9 @@
 sudo apt-get update
 sudo apt upgrade -y
 
+# Install git
+sudo apt install git-all
+
 # Install ansible developer requirements
 pip3 install wheel --quiet
 pip3 install pywinrm --quiet
@@ -15,5 +18,5 @@ pip3 install molecule --quiet
 pip3 install molecule-azure --quiet
 pip3 install junit_xml --quiet
 
-# Install AzCLI
+# Install azcli
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
