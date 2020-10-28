@@ -119,7 +119,7 @@ SETTINGS
 
   protected_settings = <<PROTECTED_SETTINGS
     {
-        "commandToExecute": "https://raw.githubusercontent.com/globalbao/terraform-azurerm-ansible-linux-vm/master/scripts/ubuntu-setup-ansible.sh"
+        "commandToExecute": "./ubuntu-setup-ansible.sh"
     }
 PROTECTED_SETTINGS
 }
