@@ -1,22 +1,28 @@
 #!/bin/bash
+# This file should be sourced
 
-# Update all packages that have available updates.
+# Change directory to user home
+cd /home/ansibleadmin
+
+# Upgrade all packages that have available updates and remove old ones.
 sudo apt-get update
 sudo apt upgrade -y
+sudo apt autoremove --assume-yes
 
 # Install git
-sudo apt install git-all
-
-# Install ansible developer requirements
-pip3 install wheel --quiet
-pip3 install pywinrm --quiet
-pip3 install requests --quiet
-pip3 install ansible --quiet
-pip3 install ansible-lint --quiet
-pip3 install ansible[azure] --quiet
-pip3 install molecule --quiet
-pip3 install molecule-azure --quiet
-pip3 install junit_xml --quiet
+sudo apt install git --assume-yes
 
 # Install azcli
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# Install venv and pip
+sudo apt install python3-venv --assume-yes
+sudo apt install python3-pip --assume-yes
+
+# Setup virtual environment and push home folder ownership
+sudo python3 -m venv venv
+sudo chown ansibleadmin /home/ansibleadmin --recursive
+
+# Install ansible and azure modules into virtual environment
+pip3 install -r https://raw.githubusercontent.com/globalbao/terraform-azurerm-ansible-linux-vm/master/scripts/requirements-ansible.txt
+pip3 install -r https://raw.githubusercontent.com/globalbao/terraform-azurerm-ansible-linux-vm/master/scripts/requirements-azure.txt

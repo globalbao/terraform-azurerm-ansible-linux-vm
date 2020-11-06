@@ -8,11 +8,10 @@ data "azurerm_subnet" "default" {
     azurerm_virtual_network.vnet1
   ]
 }
-
 variable "rgName" {
   type        = string
-  description = "resource group name"
-  default     = "ansible-devhost-rg"
+  description = "resource group name w/ technician's initials as a suffix"
+  default     = "ansible-devhost-yourinitials"
 }
 
 variable "rgLocation" {
@@ -23,8 +22,8 @@ variable "rgLocation" {
 
 variable "vnetName" {
   type        = string
-  description = "virtual network name"
-  default     = "ansible-dev-vnet"
+  description = "virtual network name w/ technician's initials as a suffix"
+  default     = "ansible-dev-vnet-yourinitials"
 }
 
 variable "vnetAddressSpace" {
@@ -47,13 +46,13 @@ variable "vnetSubnetAddress" {
 
 variable "nsgName" {
   type        = string
-  description = "network security group name"
-  default     = "default-subnet-nsg"
+  description = "network security group name w/ technician's initials as a suffix"
+  default     = "ansible-dev-subnet-nsg-yourinitials"
 }
 
 variable "nsgRule1" {
   type        = map
-  description = "network security group rule 1"
+  description = "network security group rule 1 - remember to modify 'source_address_prefix' with your own local Public IP address https://www.whatismyip.com/"
   default = {
     "name"                       = "SSH_allow"
     "description"                = "Allow inbound SSH from single Public IP to Ansible Host"
@@ -76,14 +75,14 @@ variable "vmNICPrivateIP" {
 
 variable "vmPublicIPDNS" {
   type        = string
-  description = "virtual machine public IP DNS name"
-  default     = "ansibledevhost1"
+  description = "virtual machine public IP DNS name w/ technician's initials as a suffix"
+  default     = "ansibledevhost1-yourinitials"
 }
 
 variable "vmName" {
   type        = string
-  description = "virtual machine name"
-  default     = "ansibledevhost1"
+  description = "virtual machine name w/ technician's initials as a suffix"
+  default     = "ansibledevhost1-yourinitials"
 }
 
 variable "vmSize" {
