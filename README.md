@@ -1,5 +1,31 @@
-# AzureRM Ansible Linux VM - 
+# AzureRM Ansible Linux VM
 A custom Terraform module to deploy 1x Linux VM for Ansible playbook development in Microsoft Azure.
+
+Get in touch :octocat:
+
+* Twitter: [@GitBao](https://twitter.com/gitbao)
+* LinkedIn: [@JesseLoudon](https://www.linkedin.com/in/jesseloudon/)
+* Web: [jloudon.com](https://jloudon.com)
+* GitHub: [@JesseLoudon](https://github.com/jesseloudon)
+
+## Blogs that might interest you :pencil:
+
+* [Ansible on Azure Part 1](https://jloudon.com/cloud/Ansible-on-Azure-Part-1/) covers the birds-eye solution overview and introduces you to key components.
+* [Ansible on Azure Part 2](https://jloudon.com/cloud/Ansible-on-Azure-Part-2/) showcases this Terraform module used to automate deployment of an Ansible control host into Azure.
+* [Ansible on Azure Part 3](https://jloudon.com/cloud/Ansible-on-Azure-Part-3/) dives into using the Molecule-Azure driver to rapidly develop Ansible playbook tasks on Azure instances.
+
+## Terraform resources
+
+Resource Type | Count | Notes
+-------------:|:-----:|:------
+Resource Group | 1 |Logical container for all below resources
+Virtual Network | 1 |Provides network connectivity between the Ansible host & test instances
+SSH Key| 1 |Your key authentication into the Ansible host (stored within the TF state file)
+Linux Virtual Machine| 1 |Ubuntu server setup as the Ansible host
+Public IP | 1|Allows remote connectivity into the Ansible host
+Network Security Group| 1 |Restricts network access over SSH to the Ansible host from your defined Public IP
+Virtual Machine Shutdown Schedule | 1 |Automatically shuts down the Ansible host on a daily schedule to save costs
+Virtual Machine Extension | 1 |Automatically runs a shell script (located in the repo) to setup software requirements on the Ansible host
 
 ## Pre-requisities
 * [Terraform > 0.13.0](https://www.terraform.io/downloads.html)
