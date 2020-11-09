@@ -11,7 +11,7 @@ data "azurerm_subnet" "default" {
 variable "rgName" {
   type        = string
   description = "resource group name w/ technician's initials as a suffix"
-  default     = "ansible-devhost-yourinitials"
+  default     = "ansibledev-yourinitials"
 }
 
 variable "rgLocation" {
@@ -23,7 +23,7 @@ variable "rgLocation" {
 variable "vnetName" {
   type        = string
   description = "virtual network name w/ technician's initials as a suffix"
-  default     = "ansible-dev-vnet-yourinitials"
+  default     = "ansibledev-yourinitials"
 }
 
 variable "vnetAddressSpace" {
@@ -47,7 +47,7 @@ variable "vnetSubnetAddress" {
 variable "nsgName" {
   type        = string
   description = "network security group name w/ technician's initials as a suffix"
-  default     = "ansible-dev-subnet-nsg-yourinitials"
+  default     = "ansibledev-yourinitials"
 }
 
 variable "nsgRule1" {
@@ -76,13 +76,13 @@ variable "vmNICPrivateIP" {
 variable "vmPublicIPDNS" {
   type        = string
   description = "virtual machine public IP DNS name w/ technician's initials as a suffix"
-  default     = "ansibledevhost1-yourinitials"
+  default     = "ansibledev-yourinitials"
 }
 
 variable "vmName" {
   type        = string
   description = "virtual machine name w/ technician's initials as a suffix"
-  default     = "ansibledevhost1-yourinitials"
+  default     = "ansibledev-yourinitials"
 }
 
 variable "vmSize" {

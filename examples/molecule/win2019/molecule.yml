@@ -1,0 +1,25 @@
+---
+lint: |
+  ansible-lint tasks/main.yml
+dependency:
+  name: galaxy
+driver:
+  name: azure
+platforms:
+  - name: win2019
+provisioner:
+  name: ansible
+  connection_options:
+    become: yes
+    become_method: runas
+    become_user: SYSTEM
+    ansible_password: Welcome12345
+    ansible_connection: winrm
+    ansible_winrm_transport: basic
+    ansible_winrm_scheme: https
+    ansible_winrm_server_cert_validation: ignore
+    ansible_shell_type: powershell
+verifier:
+  name: ansible
+playbooks:
+  prepare: prepare.yml

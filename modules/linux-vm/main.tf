@@ -37,7 +37,7 @@ resource "azurerm_network_security_rule" "subnet1nsg1rule1" {
 }
 
 resource "azurerm_public_ip" "pip1" {
-  name                = "${var.vmName}-pip1"
+  name                = var.vmName
   resource_group_name = azurerm_resource_group.rg1.name
   location            = azurerm_resource_group.rg1.location
   allocation_method   = "Dynamic"
@@ -45,7 +45,7 @@ resource "azurerm_public_ip" "pip1" {
 }
 
 resource "azurerm_network_interface" "nic1" {
-  name                = "${var.vmName}-nic1"
+  name                = var.vmName
   location            = azurerm_resource_group.rg1.location
   resource_group_name = azurerm_resource_group.rg1.name
 
@@ -105,7 +105,7 @@ resource "azurerm_dev_test_global_vm_shutdown_schedule" "vm1" {
 }
 
 resource "azurerm_virtual_machine_extension" "vm1extension" {
-  name                 = "${var.vmName}-extension"
+  name                 = var.vmName
   virtual_machine_id   = azurerm_linux_virtual_machine.vm1.id
   publisher            = "Microsoft.Azure.Extensions"
   type                 = "CustomScript"

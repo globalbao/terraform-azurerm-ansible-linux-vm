@@ -1,0 +1,104 @@
+---
+  - name: Create
+    hosts: localhost
+    connection: local
+    gather_facts: false
+  
+    vars:
+      resource_group_name: ansibledev-rhel8-yourinitials
+      virtual_network_resource_group_name: ansibledev-yourinitials
+      virtual_network_name: ansibledev-yourinitials
+      location: "{{ lookup('env', 'AZURE_REGION') or 'australiaeast' }}"
+      ssh_user: molecule
+      ssh_port: 22
+      subnet_name: default
+      virtual_machine_name: rhel8
+      network_interface_name: "{{ virtual_machine_name }}01"
+      keypair_path: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/ssh_key"
+  
+    tasks:
+      - name: Create resource group
+        azure_rm_resourcegroup:
+          name: "{{ resource_group_name }}"
+          location: "{{ location }}"
+  
+      - name: Create keypair
+        user:
+          name: "{{ lookup('env', 'USER') }}"
+          generate_ssh_key: true
+          ssh_key_file: "{{ keypair_path }}"
+        register: keypair
+  
+      - name: Create molecule instance(s)
+        azure_rm_virtualmachine:
+          resource_group: "{{ resource_group_name }}"
+          virtual_network_name: "{{ virtual_network_name }}"
+          virtual_network_resource_group: "{{ virtual_network_resource_group_name }}"
+          name: "{{ virtual_machine_name }}"
+          vm_size: Standard_DS1_v2
+          admin_username: "{{ ssh_user }}"
+          public_ip_allocation_method: Disabled
+          ssh_password_enabled: false
+          ssh_public_keys:
+            - path: "/home/{{ ssh_user }}/.ssh/authorized_keys"
+              key_data: "{{ keypair.ssh_public_key }}"
+          image:
+            offer: CentOS
+            publisher: OpenLogic
+            sku: '8.0'
+            version: latest
+        register: server
+        with_items: "{{ molecule_yml.platforms }}"
+        async: 7200
+        poll: 0
+  
+      - name: Wait for instance(s) creation to complete
+        async_status:
+          jid: "{{ item.ansible_job_id }}"
+        register: azure_jobs
+        until: azure_jobs.finished
+        retries: 300
+        with_items: "{{ server.results }}"
+  
+      - name: Get facts for one private ip
+        azure_rm_networkinterface_info:
+          resource_group: "{{ resource_group_name }}"
+          name: "{{ network_interface_name }}"
+        register: privateipaddress
+  
+      - name: set private ip address fact
+        set_fact: privateipaddress="{{ privateipaddress | json_query('networkinterfaces[0].ip_configurations[0].private_ip_address')}}"
+  
+  
+      # Mandatory configuration for Molecule to function.
+  
+      - name: Populate instance config dict
+        set_fact:
+          instance_conf_dict: {
+            'instance': "{{ item.ansible_facts.azure_vm.name }}",
+            'address': "{{ privateipaddress }}",
+            'user': "{{ ssh_user }}",
+            'port': "{{ ssh_port }}",
+            'identity_file': "{{ keypair_path }}", }
+        with_items: "{{ azure_jobs.results }}"
+        register: instance_config_dict
+        when: server.changed | bool
+  
+      - name: Convert instance config dict to a list
+        set_fact:
+          instance_conf: "{{ instance_config_dict.results | map(attribute='ansible_facts.instance_conf_dict') | list }}"
+        when: server.changed | bool
+  
+      - name: Dump instance config
+        copy:
+          content: "{{ instance_conf | to_json | from_json }}"
+          dest: "{{ molecule_instance_config }}"
+        when: server.changed | bool
+  
+      - name: Wait for SSH
+        wait_for:
+          port: "{{ ssh_port }}"
+          host: "{{ item.address }}"
+          search_regex: SSH
+          delay: 10
+        with_items: "{{ lookup('file', molecule_instance_config) }}"

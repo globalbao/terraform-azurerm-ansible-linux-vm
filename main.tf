@@ -13,16 +13,16 @@ provider "azurerm" {
 module "linux_vm" {
   source = "./modules/linux-vm"
 
-  rgName             = "ansible-devhost-${var.technician_initials}"
+  rgName             = "ansibledev-${var.technician_initials}"
   rgLocation         = "australiaeast"
-  vnetName           = "ansible-dev-vnet-${var.technician_initials}"
+  vnetName           = "ansibledev-${var.technician_initials}"
   vnetAddressSpace   = ["10.0.0.0/24"]
   vnetSubnetName     = "default"
   vnetSubnetAddress  = "10.0.0.0/24"
-  nsgName            = "ansible-dev-subnet-nsg-${var.technician_initials}"
+  nsgName            = "ansibledev-${var.technician_initials}"
   vmNICPrivateIP     = "10.0.0.5"
-  vmPublicIPDNS      = "ansibledevhost1-${var.technician_initials}"
-  vmName             = "ansibledevhost1-${var.technician_initials}"
+  vmPublicIPDNS      = "ansibledev-${var.technician_initials}"
+  vmName             = "ansibledev-${var.technician_initials}"
   vmSize             = "Standard_B2s"
   vmAdminName        = "ansibleadmin" #If this is changed ensure you update "./scripts/ubuntu-setup-ansible.sh" with the new username
   vmShutdownTime     = "1900"

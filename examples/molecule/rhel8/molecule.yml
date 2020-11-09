@@ -1,0 +1,15 @@
+---
+lint: |
+  ansible-lint tasks/main.yml
+dependency:
+  name: galaxy
+driver:
+  name: azure
+platforms:
+  - name: rhel8
+provisioner:
+  name: ansible
+verifier:
+  name: ansible
+playbooks:
+  prepare: prepare.yml

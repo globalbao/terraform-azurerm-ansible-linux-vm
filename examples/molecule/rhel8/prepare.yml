@@ -1,0 +1,10 @@
+--- 
+- 
+  gather_facts: true
+  hosts: all
+  name: Prepare
+  tasks: 
+    - 
+      debug: 
+        msg: "{{ ansible_facts['distribution'] }}"
+      name: "print OS version"

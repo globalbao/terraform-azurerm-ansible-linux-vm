@@ -1,0 +1,49 @@
+---
+- name: Destroy
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    resource_group_name: ansibledev-rhel8-yourinitials
+
+  tasks:
+    - name: Destroy molecule instance(s)
+      azure_rm_virtualmachine:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ item.name }}"
+        state: absent
+        remove_on_absent:
+          - all_autocreated
+      register: server
+      with_items: "{{ molecule_yml.platforms }}"
+      async: 7200
+      poll: 0
+
+    - name: Wait for instance(s) deletion to complete
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      register: azure_jobs
+      until: azure_jobs.finished
+      retries: 300
+      with_items: "{{ server.results }}"
+      # avoid failure when resource_group is already missing, as we remove it later anyway
+      failed_when: false
+
+    - name: Destroy resource group
+      azure_rm_resourcegroup:
+        name: "{{ resource_group_name }}"
+        state: absent
+        force_delete_nonempty: true
+
+    # Mandatory configuration for Molecule to function.
+
+    - name: Populate instance config
+      set_fact:
+        instance_conf: {}
+
+    - name: Dump instance config
+      copy:
+        content: "{{ instance_conf | to_json | from_json }}"
+        dest: "{{ molecule_instance_config }}"
+      when: server.changed | bool

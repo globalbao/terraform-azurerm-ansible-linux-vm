@@ -1,0 +1,104 @@
+---
+  - name: Create
+    hosts: localhost
+    connection: local
+    gather_facts: false
+  
+    vars:
+      resource_group_name: ansibledev-win2019-yourinitials
+      virtual_network_resource_group_name: ansibledev-yourinitials
+      virtual_network_name: ansibledev-yourinitials
+      location: "{{ lookup('env', 'AZURE_REGION') or 'australiaeast' }}"
+      admin_username: molecule
+      admin_password: Welcome12345
+      subnet_name: default
+      virtual_machine_name: win2019
+      network_interface_name: "{{ virtual_machine_name }}01"
+      winrm_port: 5986
+  
+    tasks:
+      - name: Create resource group
+        azure_rm_resourcegroup:
+          name: "{{ resource_group_name }}"
+          location: "{{ location }}"
+  
+      - name: Create molecule instance(s)
+        azure_rm_virtualmachine:
+          resource_group: "{{ resource_group_name }}"
+          virtual_network_name: "{{ virtual_network_name }}"
+          virtual_network_resource_group: "{{ virtual_network_resource_group_name }}"
+          name: "{{ virtual_machine_name }}"
+          vm_size: Standard_DS1_v2
+          os_type: Windows
+          admin_username: "{{ admin_username }}"
+          admin_password: "{{ admin_password }}"
+          public_ip_allocation_method: Disabled
+          image:
+            offer: WindowsServer
+            publisher: MicrosoftWindowsServer
+            sku: '2019-Datacenter'
+            version: latest
+        register: server
+        with_items: "{{ molecule_yml.platforms }}"
+        async: 7200
+        poll: 0
+  
+      - name: Wait for instance(s) creation to complete
+        async_status:
+          jid: "{{ item.ansible_job_id }}"
+        register: azure_jobs
+        until: azure_jobs.finished
+        retries: 300
+        with_items: "{{ server.results }}"
+  
+      - name: create Azure vm extension to enable HTTPS WinRM listener
+        azure_rm_virtualmachineextension:
+          name: winrm-extension
+          resource_group: "{{ resource_group_name }}"
+          virtual_machine_name: "{{ virtual_machine_name }}"
+          publisher: Microsoft.Compute
+          virtual_machine_extension_type: CustomScriptExtension
+          type_handler_version: '1.9'
+          settings: '{"fileUris": ["https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"],"commandToExecute": "powershell -ExecutionPolicy Unrestricted -File ConfigureRemotingForAnsible.ps1"}'
+          auto_upgrade_minor_version: true
+  
+      - name: Get facts for one private ip
+        azure_rm_networkinterface_info:
+          resource_group: "{{ resource_group_name }}"
+          name: "{{ network_interface_name }}"
+        register: privateipaddress
+  
+      - name: set private ip address fact
+        set_fact: privateipaddress="{{ privateipaddress | json_query('networkinterfaces[0].ip_configurations[0].private_ip_address')}}"
+  
+      - name: wait for the WinRM port to come online
+        wait_for:
+          port: '{{ winrm_port }}'
+          host: '{{ privateipaddress }}'
+          timeout: 600
+  
+      # Mandatory configuration for Molecule to function.
+  
+      - name: Populate instance config dict
+        set_fact:
+          instance_conf_dict: {
+            'instance': "{{ item.ansible_facts.azure_vm.name }}",
+            'address': "{{ privateipaddress }}",
+            'user': "{{ admin_username }}",
+            'port': "{{ winrm_port }}",
+            'identity_file': ""
+            }
+        with_items: "{{ azure_jobs.results }}"
+        register: instance_config_dict
+        when: server.changed | bool
+  
+      - name: Convert instance config dict to a list
+        set_fact:
+          instance_conf: "{{ instance_config_dict.results | map(attribute='ansible_facts.instance_conf_dict') | list }}"
+        when: server.changed | bool
+  
+      - name: Dump instance config
+        copy:
+          content: "{{ instance_conf | to_json | from_json }}"
+          dest: "{{ molecule_instance_config }}"
+        when: server.changed | bool  
