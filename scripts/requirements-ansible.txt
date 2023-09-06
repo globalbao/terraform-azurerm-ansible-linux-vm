@@ -1,5 +1,5 @@
 wheel
-requests==2.24.0
+requests==2.31.0
 yamllint==1.25.0
 pywinrm==0.4.1
 junit-xml==1.9
